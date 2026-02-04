@@ -34,27 +34,28 @@ def upload_image(request):
         username = request.user.username
         received_img_folder = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'static\\received_img')
         meal_data_folder = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'static\\meal_data')
+        data_folder = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'data')
         meal_images_folder = os.path.join(meal_data_folder, 'meal_images')
         segmented_images_folder = os.path.join(meal_data_folder, 'segmented_images')
         json_folder = os.path.join(meal_data_folder, 'json_analysis_results')
-        
+
         # Temp file naming : username^temp.png
         # If user saves it : username^date^time.png
-        # I didnt use _ to seperate because username might contain that
+        # I didn't use _ to seperate because username might contain that
         temp_image_path = os.path.join(meal_images_folder, f'{username}^temp.png')
 
         with open(temp_image_path, 'wb') as temp_image:
             for chunk in image.chunks():
                 temp_image.write(chunk)
         
-        # I dont have GPU locally, so I SCP images for inference at <remote-inference-host>
+        # I don't have GPU locally, so I SCP images for inference at <remote-inference-host>
         # After that I download it
         scp_upload(source_path=temp_image_path)
         temp_segmented_image_path = os.path.join(segmented_images_folder, f'{username}^temp.png')
         temp_json_result_path = os.path.join(json_folder, f'{username}^temp.json')
         scp_download(segmented_image_destination=temp_segmented_image_path, json_result_destination=temp_json_result_path)
 
-        # load the json analysis results(area of each ingredients) to a dictionary
+        # load the json analysis results(area of each ingredient) to a dictionary
         food_area_json = os.path.join(json_folder, f'{username}^temp.json')  
         with open(food_area_json, 'r') as file:
             json_data = file.read()
@@ -64,7 +65,7 @@ def upload_image(request):
         nutrition_components = [0.0, 0.0, 0.0, 0.0, 0.0, 0.0] # 六大營養指標(公克)
         vitamines = [0.0, 0.0, 0.0, 0.0] # 維生素ADEK的含量
         category_7_food = [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0] # 七大類食物的面積
-        nutrition_csv_path = os.path.join(received_img_folder, 'nutrition_new.csv')
+        nutrition_csv_path = os.path.join(data_folder, 'nutrition_new.csv')
         # open the CSV refernece file and find nutrient data for the foods appeared in the food_area_dictionary (food area from json analysis results)
         with open(nutrition_csv_path, 'r', encoding='utf-8') as nutrition_csv:
             csv_reader = csv.reader(nutrition_csv)
@@ -85,13 +86,13 @@ def upload_image(request):
                     category_7_food[int(row[2])-1] += food_area_dictionary[str(i)]
                     row[3] = (food_unit*100)//1
                     detected_ingredients.append(row)
-            print(f'componunents : {nutrition_components}')
-            print(f'vitamines : {vitamines}')
+            print(f'components : {nutrition_components}')
+            print(f'vitamins : {vitamines}')
             print(f'category_7_food : {category_7_food}')
         analysis_dict = {
-            'ingerdients': detected_ingredients,
-            'componunents': nutrition_components,
-            'vitamines': vitamines,
+            'ingredients': detected_ingredients,
+            'components': nutrition_components,
+            'vitamins': vitamines,
             'category_7_food': category_7_food,
         }
         analysis_json = json.dumps(analysis_dict)
@@ -99,7 +100,7 @@ def upload_image(request):
         request.session['image_path'] = temp_image_path
 
         return JsonResponse({'success': True, 'username': username, 'detectedIngredients': detected_ingredients,
-                             'components': nutrition_components, 'vitamines': vitamines, 'category_7_food': category_7_food})
+                             'components': nutrition_components, 'vitamins': vitamines, 'category_7_food': category_7_food})
 
     # return render(request, 'upload_form.html')
 

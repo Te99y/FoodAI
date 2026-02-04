@@ -1,0 +1,1405 @@
+<!DOCTYPE html>
+{% load static %}
+<html lang="en">
+    <head>
+        <meta charset="utf-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no" />
+        <meta name="description" content="" />
+        <meta name="author" content="" />
+        <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
+        <meta http-equiv="Pragma" content="no-cache" />
+        <meta http-equiv="Expires" content="0" />
+        <title>FoodAI - Segment and Generate!</title>
+        <!-- Favicon-->
+        <link rel="icon" type="image/x-icon" href="{% static 'assets/favicon.ico' %}" />
+        <!-- Font Awesome icons (free version)-->
+        <script src="https://kit.fontawesome.com/a076d05399.js"></script>
+
+        <script src="https://use.fontawesome.com/releases/v6.3.0/js/all.js" crossorigin="anonymous"></script>
+        <!-- Google fonts-->
+        <link href="https://fonts.googleapis.com/css?family=Montserrat:400,700" rel="stylesheet" type="text/css" />
+        <link href="https://fonts.googleapis.com/css?family=Roboto+Slab:400,100,300,700" rel="stylesheet" type="text/css" />
+        <!-- Core theme CSS (includes Bootstrap)-->
+        <link href="{% static 'styles/styles.css' %}" rel="stylesheet" />
+    </head>
+    <body id="page-top">
+        <!-- Navigation-->
+        <nav class="navbar navbar-expand-lg navbar-dark fixed-top" id="mainNav">
+            <div class="container">
+                {% comment %} <a class="navbar-brand" href="#page-top"></a> {% endcomment %}
+                <a class="navbar-brand" href="#page-top"><img src="{% static 'assets/img/navbar-logo.png' %}" alt="..." /></a>
+                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarResponsive" aria-controls="navbarResponsive" aria-expanded="false" aria-label="Toggle navigation">
+                    Menu
+                    <i class="fas fa-bars ms-1"></i>
+                </button>
+                <div class="collapse navbar-collapse" id="navbarResponsive">
+                    <ul class="navbar-nav text-uppercase ms-auto py-4 py-lg-0">
+                        <li class="nav-item"><a class="nav-link" href="#howtouse" data-lang="en">How to use</a></li><a class="nav-link d-none" href="#howtouse" data-lang="zh">使用說明</a></li>
+                        {% if user.is_authenticated %}
+                        <li class="nav-item"><a class="nav-link" href="#segment" data-lang="en">Analyse</a></li><a class="nav-link d-none" href="#segment" data-lang="zh">餐點分析</a></li>
+                        <li class="nav-item"><a class="nav-link" href="#history" data-lang="en">History</a></li><a class="nav-link d-none" href="#history" data-lang="zh">飲食紀錄</a></li>
+                        <li class="nav-item"><a class="nav-link"; data-bs-toggle="modal" data-bs-target="#profileModal" href="" onclick="remakeProfileModal()" data-lang="en">Profile</a></li><a class="nav-link d-none"; data-bs-toggle="modal" data-bs-target="#profileModal" href="" onclick="remakeProfileModal()" data-lang="zh">個人資料</a></li>
+                        {% else %}
+                        <li class="nav-item"><a class="nav-link" href="/login" data-lang="en">Login</a></li><a class="nav-link d-none" href="/login" data-lang="zh">登入</a></li>
+                        <li class="nav-item"><a class="nav-link" href="/register" data-lang="en">Sign up</a></li><a class="nav-link d-none" href="/register" data-lang="zh">註冊</a></li>
+                        {% endif %}
+                    </ul>
+                    <button id="languageSwitcher" class="btn btn-secondary ms-3" onclick="switch_language()" data-lang="en">中文</button><button id="languageSwitcher" class="btn btn-secondary ms-3  d-none" onclick="switch_language()" data-lang="zh">English</button>
+                    <script>
+                        function switch_language(){
+                            const currentLang = document.documentElement.lang;
+                            const newLang = currentLang === 'en' ? 'zh' : 'en';
+                            document.documentElement.lang = newLang;
+            
+                            // Toggle visibility of elements based on the new language
+                            document.querySelectorAll('[data-lang]').forEach(function(element) {
+                                if (element.getAttribute('data-lang') === newLang) {
+                                    element.classList.remove('d-none');
+                                } else {
+                                    element.classList.add('d-none');
+                                }
+                            });
+            
+                            // Update button text
+                            this.textContent = newLang === 'en' ? '中文' : 'English';
+                            updateChartLabels();
+                            show_recent_meals();
+                        }
+                    </script>
+                </div>
+            </div>
+        </nav>
+        <!-- Masthead-->
+        <header class="masthead">
+            <div class="container">
+                <div class="masthead-subheading" data-lang="en">Welcome To Our Demo</div><div class="masthead-subheading d-none" data-lang="zh">歡迎來到這個Demo網頁</div>
+                <div class="masthead-heading" data-lang="en">Analyse &amp; Generate <br> Meal Pictures!</div><div class="masthead-heading d-none" data-lang="zh">分析 &amp; 生成餐點圖片!</div>
+                <a class="btn btn-primary btn-xl text-uppercase" href="#howtouse" data-lang="en">How to use</a><a class="btn btn-primary btn-xl text-uppercase d-none" href="#howtouse" data-lang="zh">使用說明</a>
+            </div>
+        </header>
+        <!-- Services-->
+        <section class="page-section" id="howtouse">
+            <div class="container">
+                <div class="text-center">
+                    <h2 class="section-heading text-uppercase" data-lang="en">How to use</h2><h2 class="section-heading text-uppercase d-none" data-lang="zh">使用說明</h2>
+                    <h3 class="section-subheading text-muted" data-lang="en">A quick guide on how to use the ANALYSE services</h3><h3 class="section-subheading text-muted d-none" data-lang="zh">希望我們能讓你盡可能輕鬆地使用這個工具</h3>
+                </div>
+                <div class="row text-center">
+                    <div class="col-md-6">
+                        <img src="{% static 'assets/img/howtouse/howtouse1.png' %}" alt="Image 1" class="img-fluid">
+                    </div>
+                    <div class="col-md-6">
+                        <img src="{% static 'assets/img/howtouse/howtouse2.png' %}" alt="Image 2" class="img-fluid">
+                    </div>
+                </div>
+            </div>
+        </section>
+        {% if user.is_authenticated %}
+        <script>
+
+            function show_recent_meals(){
+                const recentMealsContainer = document.getElementById('recentMealsContainer');
+                recentMealsContainer.innerHTML = '';
+                console.log('Fetching recent meal...');
+                fetch('/get_recent_meals')
+                .then(response => response.json())
+                .then(data => {
+                    const currentLang = document.documentElement.lang;
+                    if (currentLang=='en'){
+                        recentMealsContainer.innerHTML = `<p class="large text-muted text-center">Showing ${data.recent_meals.length} recent meals</p>`;
+                    }
+                    else if(currentLang=='zh'){
+                        recentMealsContainer.innerHTML = `<p class="large text-muted text-center">顯示最近的 ${data.recent_meals.length} 餐</p>`;
+                    }
+                    
+                    // Add recent meals to the container
+                    data.recent_meals.forEach(meal => {
+                        const mealHTML = `
+                        <div class="col">
+                                <div class="team-member">
+                                    <img class="mx-auto rounded-circle" src="${meal.meal_image_url}" alt="Meal Image" />
+                                    <h4>${meal.date_time}</h4>
+                                    <p class="text-muted">${meal.description}</p>
+                                </div>
+                            </div>
+                            `;
+                            recentMealsContainer.innerHTML += mealHTML;
+                    });
+                });
+            }
+            
+            function updateChartLabels() {
+                const currentLang = document.documentElement.lang;
+                if (currentLang === 'en') {
+                    barchart1.data.labels = ['Carbohydrates (g)', 'Fat (g)', 'Protein (g)', 'Water (kg)', 'Potassium (g)', 'Phosphorus (g)'];
+                    barchart1.data.datasets[0].label = 'Nutrition Components';
+                    barchart2.data.labels = ['Vitamin A (mg)', 'Vitamin D (μg)', 'Vitamin E (mg)', 'Vitamin K (mg)'];
+                    barchart2.data.datasets[0].label = 'Fat-soluble Vitamins';
+                    piechart.data.labels = ['Whole grains (g)', 'Oil, fat, nuts and seeds (g)', 'Legumes, fish, eggs, meat (g)', 'Dairy products (g)', 'Vegetables (g)', 'Fruits (g)', 'Others'];
+                    piechart.data.datasets[0].label = 'Nutritional Balance';
+                } else {
+                    barchart1.data.labels = ['碳水化合物 (g)', '脂肪 (g)', '蛋白質 (g)', '水 (kg)', '鉀 (g)', '磷 (g)'];
+                    barchart1.data.datasets[0].label = '關鍵營養成分';
+                    barchart2.data.labels = ['維生素 A (mg)', '維生素 D (μg)', '維生素 E (mg)', '維生素 K (mg)'];
+                    barchart2.data.datasets[0].label = '脂溶性維生素';
+                    piechart.data.labels = ['五穀根莖類 (g)', '脂肪堅果類 (g)',  '蛋豆魚肉類 (g)', '奶製品 (g)', '蔬菜類 (g)', '水果類 (g)', '其他'];
+                    piechart.data.datasets[0].label = '六大類食物';
+                }
+                barchart1.update();
+                barchart2.update();
+                piechart.update();
+            }
+        </script>
+            <!-- Portfolio Grid-->
+            <section class="page-section bg-light" id="segment">
+                <div class="container">
+                    <div class="text-center">
+                        <h2 class="section-heading text-uppercase" data-lang="en">Analyse</h2><h2 class="section-heading text-uppercase d-none" data-lang="zh">餐點分析</h2>
+                        <h3 class="section-subheading text-muted"  data-lang="en">Upload and get an analysis result of your lunch!</h3><h3 class="section-subheading text-muted d-none" data-lang="zh">上傳餐點圖片後即可進行分析!</h3>
+                    </div>
+                    <div class="row">
+                        <!-- Left side - Image Upload Form -->
+                        <div class="col-md-8">
+                            <form id="uploadForm" enctype="multipart/form-data">
+                                <div class="mb-3">
+                                    <input type="file" class="form-control" id="imageInput" accept="image/*" onchange="previewImage()">
+                                    <img id="waitspinner" src="{% static 'assets\img\loading.gif' %}" alt="Loading..." style="display: none;">
+                                </div>
+                                <div id="imagePreview" class="mb-3"></div>
+
+                                {% csrf_token %}
+                                <div class="container d-flex justify-content-between">
+                                    <button type="button" id="submitMealBtn en" class="btn btn-primary" style="width: 49%"; onclick="submitForm()" disabled data-lang="en">Submit</button>
+                                    <button type="button" id="submitMealBtn zh" class="btn btn-primary d-none" style="width: 49%"; onclick="submitForm()" disabled data-lang="zh">上傳</button>
+                                    {% comment %} <button type="button" id="saveMealBtn" class="btn btn-success" style="width: 49%"; onclick="saveMeal()" disabled>Add to Diet Record</button> {% endcomment %}
+                                    <!-- Button trigger modal -->
+                                    <button type="button" id="saveMealBtn en" class="btn btn-success" style="width: 49%"; data-bs-toggle="modal" data-bs-target="#saveMealModal" onclick="remakeModal()" data-lang="en" disabled>
+                                        Add to Diet History
+                                    </button>
+                                    <button type="button" id="saveMealBtn zh" class="btn btn-success d-none" style="width: 49%"; data-bs-toggle="modal" data-bs-target="#saveMealModal" onclick="remakeModal()" data-lang="zh" disabled>
+                                        加到我的飲食紀錄
+                                    </button>
+                                    <!-- Modal -->
+                                </div>
+                            </form> 
+                            
+                            <script>
+                                function previewImage() {
+                                    var input = document.getElementById('imageInput');
+                                    var preview = document.getElementById('imagePreview');
+                                    var waitspinner = document.getElementById('waitspinner');
+                                    var file = input.files[0];
+                                    
+                                    var reader = new FileReader();
+                                    // hind waitspinner
+                                    waitspinner.style.display = 'none';
+                                
+                                    // clear prev pic
+                                    preview.innerHTML = '';
+                                    document.getElementById("saveMealBtn en").disabled = true;
+                                    document.getElementById("saveMealBtn zh").disabled = true;
+                                
+                                    if (file) {
+                                        reader.readAsDataURL(file);
+                                        document.getElementById("submitMealBtn en").disabled = false;
+                                        document.getElementById("submitMealBtn zh").disabled = false;
+                                    }
+                                    else{
+                                        document.getElementById("submitMealBtn en").disabled = true;
+                                        document.getElementById("submitMealBtn zh").disabled = true;
+                                    }
+                                    reader.onloadend = function () {
+                                        // show new pic
+                                        preview.innerHTML = '<img src="' + reader.result + '" class="img-fluid" alt="Preview">';
+                                    }
+                                }
+
+                                function getCookie(name) {
+                                    const value = `; ${document.cookie}`;
+                                    const parts = value.split(`; ${name}=`);
+                                    if (parts.length === 2) return parts.pop().split(';').shift();
+                                }
+                                var temp_data;
+                        
+                                // Send form to backend and get AI result, whatever
+                                function submitForm() {
+                                    document.getElementById("submitMealBtn en").disabled = true;
+                                    document.getElementById("submitMealBtn zh").disabled = true;
+                                    const csrftoken = getCookie('csrftoken');
+                                    var input = document.getElementById('imageInput');
+                                    var detectedIngredients = document.getElementById('detectedIngredients');
+                                    var imagePreview = document.getElementById('imagePreview');
+                                    var waitspinner = document.getElementById('waitspinner');
+                                
+                                    if (input.files.length <= 0)  {
+                                        alert('Please select an image before submitting.');
+                                        document.getElementById("submitMealBtn en").disabled = true;
+                                        document.getElementById("submitMealBtn zh").disabled = true;
+                                        return;
+                                    }
+                                    // show waitspinner
+                                    imagePreview.innerHTML = ''
+                                    waitspinner.style.display = 'block';
+                                    // reset ingredients
+                                    var ingredientsHTML = '<ul>Detecting ingredients...</ul>';
+                                    detectedIngredients.innerHTML = ingredientsHTML;
+                                    // prep data
+                                    var formData = new FormData();
+                                    formData.append('image', input.files[0]);
+                                    // Use fetch API to send the form data to the Django backend
+                                    fetch('/upload_image', {
+                                        method: 'POST',
+                                        headers: {
+                                            'X-CSRFToken': csrftoken,
+                                        },
+                                        body: formData,
+                                    })
+                                    .then(response => response.json())
+                                    .then(data => {
+                                        temp_data = data;
+                                        // Display processed image on the frontend
+                                        waitspinner.style.display = 'none';
+                                        var timestamp = new Date().getTime();
+                                        let processedImageHTML = `<img src="static\\meal_data\\segmented_images\\${data.username}^temp.png ?t=' + ${timestamp} + '" class="img-fluid" alt="Processed Image">`;
+                                        imagePreview.innerHTML = '';
+                                        imagePreview.innerHTML = processedImageHTML;
+                                        console.log(imagePreview.innerHTML);
+                                        // Display detected ingredients on the frontend
+                                        var ingredientsHTML = '<ul>';
+                                        data.detectedIngredients.forEach(function (ingredient) {
+                                            //ingredientsHTML += '<li style="color: rgb' + ingredient[1] + ';">' + ingredient[0] + '</li>';
+                                            ingredientsHTML += '<li>' + ingredient[0] + '</li>';
+                                        });
+                                        ingredientsHTML += '</ul>';
+                                        detectedIngredients.innerHTML = ingredientsHTML;
+                                        // Update charts
+                                        console.log(data)
+                                        barchart1.data.datasets[0].data = data.components;
+                                        barchart1.update();
+                                        barchart2.data.datasets[0].data = data.vitamines;
+                                        barchart2.update();
+                                        piechart.data.datasets[0].data = data.category_7_food;
+                                        piechart.update();
+
+                                        document.getElementById('saveMealBtn en').disabled = false;
+                                        document.getElementById('saveMealBtn zh').disabled = false;
+                                        document.getElementById("submitMealBtn en").disabled = true;
+                                        document.getElementById("submitMealBtn zh").disabled = true;
+                                        remakeModal();
+                                    })
+                                    .catch(error => {
+                                        console.error('Error during image upload:', error);
+                                        detectedIngredients.innerHTML = 'Error during image upload';
+                                        barchart1.data.datasets[0].data = [0,0,0,0,0,0];
+                                        barchart1.update();
+                                        barchart2.data.datasets[0].data = [0,0,0,0];
+                                        barchart2.update();
+                                        piechart.datasets[0].data =  [0,0,0,0,0,0,0];
+                                        piechart.update();
+                                        document.getElementById("submitMealBtn en").disabled = false;
+                                        document.getElementById("submitMealBtn zh").disabled = false;
+                                    });
+                                }
+
+                                function remakeModal() {
+                                    data = temp_data
+                                    // https://www.tutorialrepublic.com/codelab.php?topic=bootstrap&file=table-with-add-and-delete-row-feature
+                                    var modal = document.getElementById('saveMealModal');
+                                    var saveBtn = modal.querySelector('#saveBtn');
+                                    // Change button color to green, show "Saved" to user
+                                    saveBtn.classList.remove('btn-success');
+                                    saveBtn.classList.add('btn-primary');
+                                    saveBtn.innerText = "Save";
+                                
+                                    var imageContainer = modal.querySelector('#mealImage');
+                                    var ingredientsContainer = modal.querySelector('#ingredientsContainer');
+                                    var timestamp = new Date().getTime();
+                                    let saveImageHTML = `<img src="static\\meal_data\\meal_images\\${data.username}^temp.png ?t=' + ${timestamp} + '" class="img-fluid" alt="Processed Image">`;
+                                    imageContainer.innerHTML = saveImageHTML;
+                                
+                                    // Populate ingredients table
+                                    var ingredientTableBody = modal.querySelector('#ingredientTableBody');
+                                    ingredientTableBody.innerHTML = ''; // Clear previous rows
+                                    data.detectedIngredients.forEach(function(ingredient, index) {
+                                        var newRow = '<tr>' +
+                                            '<td>' + ingredient[0] + '</td>' +
+                                            '<td>' + ingredient[3] + '</td>' +
+                                            '<td>' +
+                                            '<button class="btn btn-info edit" data-toggle="tooltip" title="Edit"><i class="fas fa-edit"></i></button>' +
+                                            '<button class="btn btn-danger delete" data-toggle="tooltip" title="Delete"><i class="fas fa-trash-alt"></i></button>' +
+                                            '</td>' +
+                                            '</tr>';
+                                        ingredientTableBody.innerHTML += newRow;
+                                    });
+                                
+                                    // Reassign delete functionality
+                                    reAssignDeleteFunctionality();
+                                }
+                                var deleteItem = function(index) {
+                                    var tableBody = document.getElementById('ingredientTableBody');
+                                    var row = tableBody.getElementsByTagName('tr')[index];
+                            
+                                    // Check if the row exists
+                                    if (row) {
+                                        tableBody.removeChild(row);
+                                        reAssignDeleteFunctionality(); // Reassign delete functionality after deletion
+                                    }
+                                };
+                            
+                                // Function to reassign delete functionality to delete buttons
+                                var reAssignDeleteFunctionality = function() {
+                                    var deleteButtons = document.querySelectorAll('.btn.btn-danger.delete');
+                            
+                                    deleteButtons.forEach(function(button, index) {
+                                        button.addEventListener('click', function() {
+                                            // Find the index of the clicked row
+                                            var row = this.closest('tr');
+                                            var rowIndex = Array.from(row.parentNode.children).indexOf(row);
+                                            deleteItem(rowIndex);
+                                        });
+                                    });
+                                };
+
+                                function saveMeal() {
+                                    var modal = document.getElementById('saveMealModal');
+                                    console.log('Trying to save meal');
+                                    const csrftoken = getCookie('csrftoken');
+                                    var formData = new FormData(document.getElementById('mealForm'));
+                                
+                                    return fetch('/save_meal', {
+                                        method: 'POST',
+                                        headers: {
+                                            'X-CSRFToken': csrftoken,
+                                        },
+                                        body: formData,
+                                    })
+                                    .then(response => {
+                                        if (response.ok) {
+                                            console.log('Meal saved successfully');
+                                            var saveBtn = modal.querySelector('#saveBtn');
+                                            // change button color to green, show "Saved" to user
+                                            saveBtn.classList.remove('btn-primary');
+                                            saveBtn.classList.add('btn-success');
+                                            saveBtn.innerText = "Saved!";
+                                            return Promise.resolve(); // Resolve the promise when the meal is saved successfully
+                                        } else {
+                                            console.error('Failed to save meal:', response.statusText);
+                                            return Promise.reject('Failed to save meal'); // Reject the promise on error
+                                        }
+                                    })
+                                    .catch(error => {
+                                        console.error('Error saving meal:', error);
+                                        return Promise.reject(error); // Reject the promise on error
+                                    });
+                                }
+                                async function saveAndShowMeals() {
+                                    try {
+                                        await saveMeal();
+                                        show_recent_meals();
+                                    } catch (error) {
+                                        console.error('Error in saveAndShowMeals:', error);
+                                    }
+                                }
+
+                            </script>
+                        </div>            
+                        <!-- Right side - Detected Ingredients -->
+                        <div class="col-md-4 border rounded p-3">
+                            <div id="detectedIngredients">
+                                <h3 class="section-subheading text-muted mb-3" data-lang="en">Detected Ingredients : </h3>
+                                <h3 class="section-subheading text-muted mb-3 d-none" data-lang="zh">偵測到的食物種類 : </h3>
+                                <!-- Display detected ingredients here -->
+                            </div>
+                        </div>
+                    </div>
+                    <div 
+                    <div class="row">
+                        <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+                        <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels"></script>
+
+                        <!-- Left side - Bar Charts -->
+                        <div class="col-md-6">
+                            <canvas id="barchart1"></canvas>
+                            <script>
+                                var barchart1; // declare barchart1 as global
+                                document.addEventListener('DOMContentLoaded', function () {
+                                    var ctx = document.getElementById('barchart1').getContext('2d');
+                                    barchart1 = new Chart(ctx, {
+                                        type: 'bar',
+                                        data: {
+                                            labels: ['Carbohydrates (g)', 'Fat (g)', 'Protein (g)', 'Water (g)', 'Potassium (g)', 'Phosphorus (g)'],
+                                            datasets: [{
+                                                label: 'Nutrition Components',
+                                                data: [10, 20, 30, 30, 20, 10],
+                                                backgroundColor: [
+                                                    'rgba(255, 99, 132, 0.2)',
+                                                    'rgba(54, 162, 235, 0.2)',
+                                                    'rgba(255, 206, 86, 0.2)',
+                                                    'rgba(75, 192, 192, 0.2)',
+                                                    'rgba(255, 159, 64, 0.2)',
+                                                    'rgba(153, 102, 255, 0.2)',
+                                                ],
+                                                borderColor: [
+                                                    'rgba(255, 99, 132, 1)',
+                                                    'rgba(54, 162, 235, 1)',
+                                                    'rgba(255, 206, 86, 1)',
+                                                    'rgba(75, 192, 192, 1)',
+                                                    'rgba(255, 159, 64, 1)',
+                                                    'rgba(153, 102, 255, 1)',
+                                                ],
+                                                borderWidth: 1
+                                            }]
+                                        },
+                                        options: {
+                                            indexAxis: 'y',
+                                            scales: {
+                                              y: {
+                                                ticks: {
+                                                  crossAlign: 'center',
+                                                  mirror: true
+                                                }
+                                              }
+                                            }
+                                        }
+                                    });
+                                });
+                            </script>
+                            <canvas id="barchart2"></canvas>
+                            <script>
+                                var barchart2;
+                                document.addEventListener('DOMContentLoaded', function () {
+                                    var ctx = document.getElementById('barchart2').getContext('2d');
+                                    barchart2 = new Chart(ctx, {
+                                        type: 'bar',
+                                        data: {
+                                            labels: ['Vitamin A (μg)', 'Vitamin D (μg)', 'Vitamin E (mg)', 'Vitamin K (μg)'],
+                                            datasets: [{
+                                                label: 'Fat-soluble Vitamins',
+                                                data: [10, 20, 20, 10],
+                                                backgroundColor: [
+                                                    'rgba(255, 99, 132, 0.2)',
+                                                    'rgba(54, 162, 235, 0.2)',
+                                                    'rgba(255, 206, 86, 0.2)',
+                                                    'rgba(75, 192, 192, 0.2)',
+                                                ],
+                                                borderColor: [
+                                                    'rgba(255, 99, 132, 1)',
+                                                    'rgba(54, 162, 235, 1)',
+                                                    'rgba(255, 206, 86, 1)',
+                                                    'rgba(75, 192, 192, 1)',
+                                                ],
+                                                borderWidth: 1
+                                            }]
+                                        },
+                                        options: {
+                                            indexAxis: 'y',
+                                            scales: {
+                                              y: {
+                                                ticks: {
+                                                  crossAlign: 'center',
+                                                  mirror: true
+                                                }
+                                              }
+                                            }
+                                        }
+                                    });
+                                });
+                            </script>
+                        </div>
+                        
+                        <!-- Right side - Pie Chart -->
+                        <div class="col-md-6">
+                            <canvas id="piechart"></canvas>
+                            <script>
+                                var piechart;
+                                document.addEventListener('DOMContentLoaded', function () {
+                                    var ctx = document.getElementById('piechart').getContext('2d');
+                                    piechart = new Chart(ctx, {
+                                        type: 'pie',
+                                        data: {
+                                            labels: ['Whole grains', 'Oil, fat, nuts and seeds', 'Legumes, fish, eggs, meat', 'Dairy products', 'Vegetables', 'Fruits', 'Others'],
+                                            datasets: [{
+                                                label: 'Nutritional Balance',
+                                                data: [10, 10, 10, 10, 10, 10, 10],
+                                                backgroundColor: [
+                                                    'rgba(255, 99, 132, 0.2)',
+                                                    'rgba(54, 162, 235, 0.2)',
+                                                    'rgba(255, 206, 86, 0.2)',
+                                                    'rgba(75, 192, 192, 0.2)',
+                                                    'rgba(255, 159, 64, 0.2)',
+                                                    'rgba(153, 102, 255, 0.2)',
+                                                    'rgba(255, 69, 0, 0.2)',
+                                                ],
+                                                borderColor: [
+                                                    'rgba(255, 99, 132, 1)',
+                                                    'rgba(54, 162, 235, 1)',
+                                                    'rgba(255, 206, 86, 1)',
+                                                    'rgba(75, 192, 192, 1)',
+                                                    'rgba(255, 159, 64, 1)',
+                                                    'rgba(153, 102, 255, 1)',
+                                                    'rgba(255, 69, 0, 1)',
+                                                ],
+                                                borderWidth: 1
+                                            }]
+                                        },
+                                        options: {
+                                        }
+                                    });
+                                });
+                            </script>
+                        </div>
+                    </div>
+                </div>
+            </section>
+            {% comment %} history section {% endcomment %}
+            <section class="page-section bg-light" id="history">
+                <div class="container">
+                    <div class="text-center">
+                        <h2 class="section-heading text-uppercase" data-lang="en">Diet history</h2>
+                        <h2 class="section-heading text-uppercase d-none" data-lang="zh">我的飲食紀錄</h2>
+                    </div>
+                    <div id="recentMealsContainer" class="row">
+                        <div class="col-lg-8 mx-auto text-center" data-lang="en">- Nothing to show here -<p class="large text-muted">Try adding your meal to history after <a href='#segment'>Analysing</a>!</p></div>
+                        <div class="col-lg-8 mx-auto text-center d-none" data-lang="zh">- 沒有過去的紀錄 -<p class="large text-muted">先加入幾張圖片試試吧 <a href='#segment'>加入圖片</a>!</p></div>
+                    </div>
+                    
+                    <script>
+                        show_recent_meals();
+                    </script>
+                            
+                    {% comment %} <div class="row">
+                        <div class="col-lg-8 mx-auto text-center"><p class="large text-muted">Keep track of your diet</p></div>
+                    </div> {% endcomment %}
+                </div>
+                {% comment %} 
+                <div class="container">
+                    <div id="recentMealsContainer" class="row">
+                        <p class="large text-muted text-center">- Monthly View -</p>
+                    </div>
+                    <table id='monthMealTable' class="table">
+                    </table>
+                    
+                    <script>
+                        // Fetch recent meals from the server
+                        console.log('Fetching recent meal...')
+                        fetch('/get_month_meals')
+                            .then(response => response.json())
+                            .then(data => {
+                                // Create a container for the monthly view
+                                var monthlyViewContainer = document.getElementById('monthMealTable');
+                                monthlyViewContainer.classList.add('monthly-view');
+                                // Get the day of the week for the 1st of the month (0 for Sunday, 1 for Monday, etc.)
+                                const firstDayOfMonth = new Date(new Date().getFullYear(), new Date().getMonth(), 1).getDay();
+
+                                // Create a map to store the dates with meals
+                                const mealDates = new Map();
+                                data.month_meals.forEach(meal => {
+                                    const date = new Date(meal.date_time).getDate();
+                                    mealDates.set(date, true);
+                                });
+
+                                // Loop through the rows (weeks)
+                                for (let row = 0; row < 5; row++) {
+                                    // Create a new row
+                                    const rowElement = document.createElement('tr');
+
+                                    // Loop through the columns (days of the week)
+                                    for (let col = 0; col < 7; col++) {
+                                        // Create a new cell
+                                        const cellElement = document.createElement('td');
+                                        cellElement.classList.add('day-cell');
+
+                                        // Calculate the day number based on the row and column
+                                        const dayNumber = col - firstDayOfMonth + 1 + row * 7;
+
+                                        // Only display the day number if it's within the current month
+                                        if (dayNumber > 0 && dayNumber <= new Date(new Date().getFullYear(), new Date().getMonth() + 1, 0).getDate()) {
+                                            const dayButton = document.createElement('button');
+                                            dayButton.type = 'button';
+                                            dayButton.textContent = dayNumber;
+                                            dayButton.classList.add('btn', 'btn-gray');
+
+                                            // Check if there's a meal on this day and update the button class accordingly
+                                            if (mealDates.has(dayNumber)) {
+                                                dayButton.textContent = 'x';
+                                            }
+
+                                            cellElement.appendChild(dayButton);
+                                        }
+
+                                        // Append the cell to the row
+                                        rowElement.appendChild(cellElement);
+                                    }
+
+                                    // Append the row to the monthly view container
+                                    monthlyViewContainer.appendChild(rowElement);
+                                }
+                            })
+                            .catch(error => {
+                                console.error('Error fetching recent meals:', error);
+                            });
+                        
+                    </script>
+                </div>
+                {% endcomment %}
+            </section>
+        {% else %}
+            <div style="position: relative;">
+                <!-- Blurred content here -->
+                <section class="page-section bg-light" id="segment">
+                    <div style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); z-index: 1;"></div>
+                    <div class="container">
+                        <div class="text-center">
+                            <h2 class="section-heading text-uppercase">Analyse</h2>
+                            <h3 class="section-subheading text-muted">Upload and get an analysis result of your lunch!</h3>
+                        </div>
+            
+                        <form id="uploadForm" enctype="multipart/form-data">
+                            <div class="mb-3">
+                                <input type="file" class="form-control" id="imageInput" accept="image/*" >
+                                <img id="waitspinner" src="{% static 'assets\img\loading.gif' %}" alt="Loading..." style="display: none;">
+                            </div>
+                            <div id="imagePreview" class="mb-3"></div>
+                            <button type="button" class="btn btn-primary btn-block">Submit</button>
+                        </form>
+                        <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+                        <div class="row">
+                            <div class="col-md-6">
+                                <canvas id="barchart1"></canvas>
+                                <script>
+                                    var barchart1; // declare barchart1 as global
+                                    document.addEventListener('DOMContentLoaded', function () {
+                                        var ctx = document.getElementById('barchart1').getContext('2d');
+                                        barchart1 = new Chart(ctx, {
+                                            type: 'bar',
+                                            data: {
+                                                labels: ['Carbohydrates', 'Fat', 'Protein', 'Water', 'Potassium', 'Phosphorus'],
+                                                datasets: [{
+                                                    label: 'Nutrition Components',
+                                                    data: [10, 20, 30, 30, 20, 10],
+                                                    backgroundColor: [
+                                                        'rgba(255, 99, 132, 0.2)',
+                                                        'rgba(54, 162, 235, 0.2)',
+                                                        'rgba(255, 206, 86, 0.2)',
+                                                        'rgba(75, 192, 192, 0.2)',
+                                                        'rgba(255, 159, 64, 0.2)',
+                                                        'rgba(153, 102, 255, 0.2)',
+                                                    ],
+                                                    borderColor: [
+                                                        'rgba(255, 99, 132, 1)',
+                                                        'rgba(54, 162, 235, 1)',
+                                                        'rgba(255, 206, 86, 1)',
+                                                        'rgba(75, 192, 192, 1)',
+                                                        'rgba(255, 159, 64, 1)',
+                                                        'rgba(153, 102, 255, 1)',
+                                                    ],
+                                                    borderWidth: 1
+                                                }]
+                                            },
+                                            options: {
+                                                scales: {
+                                                    y: {
+                                                        beginAtZero: true
+                                                    }
+                                                }
+                                            }
+                                        });
+                                    });
+                                </script>
+                            </div>
+                            
+                            <div class="col-md-6">
+                                <canvas id="barchart2"></canvas>
+                                <script>
+                                    var barchart2;
+                                    document.addEventListener('DOMContentLoaded', function () {
+                                        var ctx = document.getElementById('barchart2').getContext('2d');
+                                        barchart2 = new Chart(ctx, {
+                                            type: 'bar',
+                                            data: {
+                                                labels: ['A', 'D', 'E', 'K'],
+                                                datasets: [{
+                                                    label: 'Fat-soluble Vitamins',
+                                                    data: [10, 20, 20, 10],
+                                                    backgroundColor: [
+                                                        'rgba(255, 99, 132, 0.2)',
+                                                        'rgba(54, 162, 235, 0.2)',
+                                                        'rgba(255, 206, 86, 0.2)',
+                                                        'rgba(75, 192, 192, 0.2)',
+                                                    ],
+                                                    borderColor: [
+                                                        'rgba(255, 99, 132, 1)',
+                                                        'rgba(54, 162, 235, 1)',
+                                                        'rgba(255, 206, 86, 1)',
+                                                        'rgba(75, 192, 192, 1)',
+                                                    ],
+                                                    borderWidth: 1
+                                                }]
+                                            },
+                                            options: {
+                                                scales: {
+                                                    y: {
+                                                        beginAtZero: true
+                                                    }
+                                                }
+                                            }
+                                        });
+                                    });
+                                    updateChartLabels();
+                                </script>
+                            </div>
+                        </div>
+                    <div>
+                </section>
+                <div style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); z-index: 2; text-align: center;">
+                    <p style="color: black; font-size: 24px;">Please <a href='/login'>log in</a> first</p>
+                </div>
+            </div>
+        {% endif %}
+        
+
+
+        {% comment %}
+        <!-- About-->
+        <section class="page-section" id="generate">
+            <div class="container">
+                <div class="text-center">
+                    <h2 class="section-heading text-uppercase">Generate</h2>
+                    <h3 class="section-subheading text-muted">Lorem ipsum dolor sit amet consectetur.</h3>
+                {% comment %} </div>
+                <ul class="timeline">
+                    <li>
+                        <div class="timeline-image"><img class="rounded-circle img-fluid" src="assets/img/about/1.jpg" alt="..." /></div>
+                        <div class="timeline-panel">
+                            <div class="timeline-heading">
+                                <h4>2009-2011</h4>
+                                <h4 class="subheading">Our Humble Beginnings</h4>
+                            </div>
+                            <div class="timeline-body"><p class="text-muted">Lorem ipsum dolor sit amet, consectetur adipisicing elit. Sunt ut voluptatum eius sapiente, totam reiciendis temporibus qui quibusdam, recusandae sit vero unde, sed, incidunt et ea quo dolore laudantium consectetur!</p></div>
+                        </div>
+                    </li>
+                    <li class="timeline-inverted">
+                        <div class="timeline-image"><img class="rounded-circle img-fluid" src="assets/img/about/2.jpg" alt="..." /></div>
+                        <div class="timeline-panel">
+                            <div class="timeline-heading">
+                                <h4>March 2011</h4>
+                                <h4 class="subheading">An Agency is Born</h4>
+                            </div>
+                            <div class="timeline-body"><p class="text-muted">Lorem ipsum dolor sit amet, consectetur adipisicing elit. Sunt ut voluptatum eius sapiente, totam reiciendis temporibus qui quibusdam, recusandae sit vero unde, sed, incidunt et ea quo dolore laudantium consectetur!</p></div>
+                        </div>
+                    </li>
+                    <li>
+                        <div class="timeline-image"><img class="rounded-circle img-fluid" src="assets/img/about/3.jpg" alt="..." /></div>
+                        <div class="timeline-panel">
+                            <div class="timeline-heading">
+                                <h4>December 2015</h4>
+                                <h4 class="subheading">Transition to Full Service</h4>
+                            </div>
+                            <div class="timeline-body"><p class="text-muted">Lorem ipsum dolor sit amet, consectetur adipisicing elit. Sunt ut voluptatum eius sapiente, totam reiciendis temporibus qui quibusdam, recusandae sit vero unde, sed, incidunt et ea quo dolore laudantium consectetur!</p></div>
+                        </div>
+                    </li>
+                    <li class="timeline-inverted">
+                        <div class="timeline-image"><img class="rounded-circle img-fluid" src="assets/img/about/4.jpg" alt="..." /></div>
+                        <div class="timeline-panel">
+                            <div class="timeline-heading">
+                                <h4>July 2020</h4>
+                                <h4 class="subheading">Phase Two Expansion</h4>
+                            </div>
+                            <div class="timeline-body"><p class="text-muted">Lorem ipsum dolor sit amet, consectetur adipisicing elit. Sunt ut voluptatum eius sapiente, totam reiciendis temporibus qui quibusdam, recusandae sit vero unde, sed, incidunt et ea quo dolore laudantium consectetur!</p></div>
+                        </div>
+                    </li>
+                    <li class="timeline-inverted">
+                        <div class="timeline-image">
+                            <h4>
+                                Be Part
+                                <br />
+                                Of Our
+                                <br />
+                                Story!
+                            </h4>
+                        </div>
+                    </li>
+                </ul>
+            </div>
+        </section>
+        <!-- Team-->
+        <section class="page-section bg-light" id="team">
+            <div class="container">
+                <div class="text-center">
+                    <h2 class="section-heading text-uppercase">Our Amazing Team</h2>
+                    <h3 class="section-subheading text-muted">Lorem ipsum dolor sit amet consectetur.</h3>
+                </div>
+                <div class="row">
+                    <div class="col-lg-4">
+                        <div class="team-member">
+                            <img class="mx-auto rounded-circle" src="assets/img/team/1.jpg" alt="..." />
+                            <h4>Parveen Anand</h4>
+                            <p class="text-muted">Lead Designer</p>
+                            <a class="btn btn-dark btn-social mx-2" href="#!" aria-label="Parveen Anand Twitter Profile"><i class="fab fa-twitter"></i></a>
+                            <a class="btn btn-dark btn-social mx-2" href="#!" aria-label="Parveen Anand Facebook Profile"><i class="fab fa-facebook-f"></i></a>
+                            <a class="btn btn-dark btn-social mx-2" href="#!" aria-label="Parveen Anand LinkedIn Profile"><i class="fab fa-linkedin-in"></i></a>
+                        </div>
+                    </div>
+                    <div class="col-lg-4">
+                        <div class="team-member">
+                            <img class="mx-auto rounded-circle" src="assets/img/team/2.jpg" alt="..." />
+                            <h4>Diana Petersen</h4>
+                            <p class="text-muted">Lead Marketer</p>
+                            <a class="btn btn-dark btn-social mx-2" href="#!" aria-label="Diana Petersen Twitter Profile"><i class="fab fa-twitter"></i></a>
+                            <a class="btn btn-dark btn-social mx-2" href="#!" aria-label="Diana Petersen Facebook Profile"><i class="fab fa-facebook-f"></i></a>
+                            <a class="btn btn-dark btn-social mx-2" href="#!" aria-label="Diana Petersen LinkedIn Profile"><i class="fab fa-linkedin-in"></i></a>
+                        </div>
+                    </div>
+                    <div class="col-lg-4">
+                        <div class="team-member">
+                            <img class="mx-auto rounded-circle" src="assets/img/team/3.jpg" alt="..." />
+                            <h4>Larry Parker</h4>
+                            <p class="text-muted">Lead Developer</p>
+                            <a class="btn btn-dark btn-social mx-2" href="#!" aria-label="Larry Parker Twitter Profile"><i class="fab fa-twitter"></i></a>
+                            <a class="btn btn-dark btn-social mx-2" href="#!" aria-label="Larry Parker Facebook Profile"><i class="fab fa-facebook-f"></i></a>
+                            <a class="btn btn-dark btn-social mx-2" href="#!" aria-label="Larry Parker LinkedIn Profile"><i class="fab fa-linkedin-in"></i></a>
+                        </div>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-lg-8 mx-auto text-center"><p class="large text-muted">Lorem ipsum dolor sit amet, consectetur adipisicing elit. Aut eaque, laboriosam veritatis, quos non quis ad perspiciatis, totam corporis ea, alias ut unde.</p></div>
+                </div>
+            </div>
+        </section>
+        <!-- Clients-->
+        <div class="py-5">
+            <div class="container">
+                <div class="row align-items-center">
+                    <div class="col-md-3 col-sm-6 my-3">
+                        <a href="#!"><img class="img-fluid img-brand d-block mx-auto" src="assets/img/logos/microsoft.svg" alt="..." aria-label="Microsoft Logo" /></a>
+                    </div>
+                    <div class="col-md-3 col-sm-6 my-3">
+                        <a href="#!"><img class="img-fluid img-brand d-block mx-auto" src="assets/img/logos/google.svg" alt="..." aria-label="Google Logo" /></a>
+                    </div>
+                    <div class="col-md-3 col-sm-6 my-3">
+                        <a href="#!"><img class="img-fluid img-brand d-block mx-auto" src="assets/img/logos/facebook.svg" alt="..." aria-label="Facebook Logo" /></a>
+                    </div>
+                    <div class="col-md-3 col-sm-6 my-3">
+                        <a href="#!"><img class="img-fluid img-brand d-block mx-auto" src="assets/img/logos/ibm.svg" alt="..." aria-label="IBM Logo" /></a>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <!-- Contact-->
+        <section class="page-section" id="contact">
+            <div class="container">
+                <div class="text-center">
+                    <h2 class="section-heading text-uppercase">Contact Us</h2>
+                    <h3 class="section-subheading text-muted">Lorem ipsum dolor sit amet consectetur.</h3>
+                </div>
+                <!-- * * * * * * * * * * * * * * *-->
+                <!-- * * SB Forms Contact Form * *-->
+                <!-- * * * * * * * * * * * * * * *-->
+                <!-- This form is pre-integrated with SB Forms.-->
+                <!-- To make this form functional, sign up at-->
+                <!-- https://startbootstrap.com/solution/contact-forms-->
+                <!-- to get an API token!-->
+                <form id="contactForm" data-sb-form-api-token="API_TOKEN">
+                    <div class="row align-items-stretch mb-5">
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <!-- Name input-->
+                                <input class="form-control" id="name" type="text" placeholder="Your Name *" data-sb-validations="required" />
+                                <div class="invalid-feedback" data-sb-feedback="name:required">A name is required.</div>
+                            </div>
+                            <div class="form-group">
+                                <!-- Email address input-->
+                                <input class="form-control" id="email" type="email" placeholder="Your Email *" data-sb-validations="required,email" />
+                                <div class="invalid-feedback" data-sb-feedback="email:required">An email is required.</div>
+                                <div class="invalid-feedback" data-sb-feedback="email:email">Email is not valid.</div>
+                            </div>
+                            <div class="form-group mb-md-0">
+                                <!-- Phone number input-->
+                                <input class="form-control" id="phone" type="tel" placeholder="Your Phone *" data-sb-validations="required" />
+                                <div class="invalid-feedback" data-sb-feedback="phone:required">A phone number is required.</div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-group form-group-textarea mb-md-0">
+                                <!-- Message input-->
+                                <textarea class="form-control" id="message" placeholder="Your Message *" data-sb-validations="required"></textarea>
+                                <div class="invalid-feedback" data-sb-feedback="message:required">A message is required.</div>
+                            </div>
+                        </div>
+                    </div>
+                    <!-- Submit success message-->
+                    <!---->
+                    <!-- This is what your users will see when the form-->
+                    <!-- has successfully submitted-->
+                    <div class="d-none" id="submitSuccessMessage">
+                        <div class="text-center text-white mb-3">
+                            <div class="fw-bolder">Form submission successful!</div>
+                            To activate this form, sign up at
+                            <br />
+                            <a href="https://startbootstrap.com/solution/contact-forms">https://startbootstrap.com/solution/contact-forms</a>
+                        </div>
+                    </div>
+                    <!-- Submit error message-->
+                    <!---->
+                    <!-- This is what your users will see when there is-->
+                    <!-- an error submitting the form-->
+                    <div class="d-none" id="submitErrorMessage"><div class="text-center text-danger mb-3">Error sending message!</div></div>
+                    <!-- Submit Button-->
+                    <div class="text-center"><button class="btn btn-primary btn-xl text-uppercase disabled" id="submitButton" type="submit">Send Message</button></div>
+                </form>
+            </div>
+        </section> 
+        {% endcomment %}
+
+
+
+        <!-- Footer-->
+        <footer class="footer py-4">
+            <div class="container">
+                <div class="row align-items-center">
+                    <div class="col-lg-4 text-lg-start" data-lang="en">Copyright &copy; No copyrights reserved. </div>
+                    <div class="col-lg-4 text-lg-start d-none" data-lang="zh">版權所有 &copy; 無版權問題 </div>
+                    <div class="col-lg-4 my-3 my-lg-0">
+                        <a class="btn btn-dark btn-social mx-2" href="#!" aria-label="Github"><i class="fab fa-github"></i></a>
+                        <a class="btn btn-dark btn-social mx-2" href="https://www.facebook.com/people/NCKU-IIR-Lab/100065172414249/" aria-label="Facebook"><i class="fab fa-facebook-f"></i></a>
+                        <a class="btn btn-dark btn-social mx-2" href="#!" aria-label="Youtube"><i class="fab fa-youtube"></i></a>
+                    </div>
+                    <div class="col-lg-4 text-lg-end">
+                        <a class="link-dark text-decoration-none me-3" href="#!" data-lang="en">Privacy Policy</a>
+                        <a class="link-dark text-decoration-none me-3 d-none" href="#!" data-lang-"zh">隱私政策</a>
+                        <a class="link-dark text-decoration-none" href="/home/command/get_all_movie" data-lang="en">Terms of Use</a>
+                        <a class="link-dark text-decoration-none d-none" href="/home/command/get_all_movie" data-lang="zh">使用條約</a>
+                    </div>
+                </div>
+            </div>
+        </footer>
+
+
+        <!-- Portfolio Modals-->
+        
+        <!-- Portfolio item 1 modal popup-->
+        <div class="portfolio-modal modal fade" id="portfolioModal1" tabindex="-1" role="dialog" aria-hidden="true">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="close-modal" data-bs-dismiss="modal"><img src="assets/img/close-icon.svg" alt="Close modal" /></div>
+                    <div class="container">
+                        <div class="row justify-content-center">
+                            <div class="col-lg-8">
+                                <div class="modal-body">
+                                    <!-- Project details-->
+                                    <h2 class="text-uppercase">Project Name</h2>
+                                    <p class="item-intro text-muted">Lorem ipsum dolor sit amet consectetur.</p>
+                                    <img class="img-fluid d-block mx-auto" src="assets/img/portfolio/1.jpg" alt="..." />
+                                    <p>Use this area to describe your project. Lorem ipsum dolor sit amet, consectetur adipisicing elit. Est blanditiis dolorem culpa incidunt minus dignissimos deserunt repellat aperiam quasi sunt officia expedita beatae cupiditate, maiores repudiandae, nostrum, reiciendis facere nemo!</p>
+                                    <ul class="list-inline">
+                                        <li>
+                                            <strong>Client:</strong>
+                                            Threads
+                                        </li>
+                                        <li>
+                                            <strong>Category:</strong>
+                                            Illustration
+                                        </li>
+                                    </ul>
+                                    <button class="btn btn-primary btn-xl text-uppercase" data-bs-dismiss="modal" type="button">
+                                        <i class="fas fa-xmark me-1"></i>
+                                        Close Project
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <!-- Portfolio item 2 modal popup-->
+        <div class="portfolio-modal modal fade" id="portfolioModal2" tabindex="-1" role="dialog" aria-hidden="true">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="close-modal" data-bs-dismiss="modal"><img src="assets/img/close-icon.svg" alt="Close modal" /></div>
+                    <div class="container">
+                        <div class="row justify-content-center">
+                            <div class="col-lg-8">
+                                <div class="modal-body">
+                                    <!-- Project details-->
+                                    <h2 class="text-uppercase">Project Name</h2>
+                                    <p class="item-intro text-muted">Lorem ipsum dolor sit amet consectetur.</p>
+                                    <img class="img-fluid d-block mx-auto" src="assets/img/portfolio/2.jpg" alt="..." />
+                                    <p>Use this area to describe your project. Lorem ipsum dolor sit amet, consectetur adipisicing elit. Est blanditiis dolorem culpa incidunt minus dignissimos deserunt repellat aperiam quasi sunt officia expedita beatae cupiditate, maiores repudiandae, nostrum, reiciendis facere nemo!</p>
+                                    <ul class="list-inline">
+                                        <li>
+                                            <strong>Client:</strong>
+                                            Explore
+                                        </li>
+                                        <li>
+                                            <strong>Category:</strong>
+                                            Graphic Design
+                                        </li>
+                                    </ul>
+                                    <button class="btn btn-primary btn-xl text-uppercase" data-bs-dismiss="modal" type="button">
+                                        <i class="fas fa-xmark me-1"></i>
+                                        Close Project
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <!-- Portfolio item 3 modal popup-->
+        <div class="portfolio-modal modal fade" id="portfolioModal3" tabindex="-1" role="dialog" aria-hidden="true">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="close-modal" data-bs-dismiss="modal"><img src="assets/img/close-icon.svg" alt="Close modal" /></div>
+                    <div class="container">
+                        <div class="row justify-content-center">
+                            <div class="col-lg-8">
+                                <div class="modal-body">
+                                    <!-- Project details-->
+                                    <h2 class="text-uppercase">Project Name</h2>
+                                    <p class="item-intro text-muted">Lorem ipsum dolor sit amet consectetur.</p>
+                                    <img class="img-fluid d-block mx-auto" src="assets/img/portfolio/3.jpg" alt="..." />
+                                    <p>Use this area to describe your project. Lorem ipsum dolor sit amet, consectetur adipisicing elit. Est blanditiis dolorem culpa incidunt minus dignissimos deserunt repellat aperiam quasi sunt officia expedita beatae cupiditate, maiores repudiandae, nostrum, reiciendis facere nemo!</p>
+                                    <ul class="list-inline">
+                                        <li>
+                                            <strong>Client:</strong>
+                                            Finish
+                                        </li>
+                                        <li>
+                                            <strong>Category:</strong>
+                                            Identity
+                                        </li>
+                                    </ul>
+                                    <button class="btn btn-primary btn-xl text-uppercase" data-bs-dismiss="modal" type="button">
+                                        <i class="fas fa-xmark me-1"></i>
+                                        Close Project
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <!-- Portfolio item 4 modal popup-->
+        <div class="portfolio-modal modal fade" id="portfolioModal4" tabindex="-1" role="dialog" aria-hidden="true">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="close-modal" data-bs-dismiss="modal"><img src="assets/img/close-icon.svg" alt="Close modal" /></div>
+                    <div class="container">
+                        <div class="row justify-content-center">
+                            <div class="col-lg-8">
+                                <div class="modal-body">
+                                    <!-- Project details-->
+                                    <h2 class="text-uppercase">Project Name</h2>
+                                    <p class="item-intro text-muted">Lorem ipsum dolor sit amet consectetur.</p>
+                                    <img class="img-fluid d-block mx-auto" src="assets/img/portfolio/4.jpg" alt="..." />
+                                    <p>Use this area to describe your project. Lorem ipsum dolor sit amet, consectetur adipisicing elit. Est blanditiis dolorem culpa incidunt minus dignissimos deserunt repellat aperiam quasi sunt officia expedita beatae cupiditate, maiores repudiandae, nostrum, reiciendis facere nemo!</p>
+                                    <ul class="list-inline">
+                                        <li>
+                                            <strong>Client:</strong>
+                                            Lines
+                                        </li>
+                                        <li>
+                                            <strong>Category:</strong>
+                                            Branding
+                                        </li>
+                                    </ul>
+                                    <button class="btn btn-primary btn-xl text-uppercase" data-bs-dismiss="modal" type="button">
+                                        <i class="fas fa-xmark me-1"></i>
+                                        Close Project
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <!-- Portfolio item 5 modal popup-->
+        <div class="portfolio-modal modal fade" id="portfolioModal5" tabindex="-1" role="dialog" aria-hidden="true">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="close-modal" data-bs-dismiss="modal"><img src="assets/img/close-icon.svg" alt="Close modal" /></div>
+                    <div class="container">
+                        <div class="row justify-content-center">
+                            <div class="col-lg-8">
+                                <div class="modal-body">
+                                    <!-- Project details-->
+                                    <h2 class="text-uppercase">Project Name</h2>
+                                    <p class="item-intro text-muted">Lorem ipsum dolor sit amet consectetur.</p>
+                                    <img class="img-fluid d-block mx-auto" src="assets/img/portfolio/5.jpg" alt="..." />
+                                    <p>Use this area to describe your project. Lorem ipsum dolor sit amet, consectetur adipisicing elit. Est blanditiis dolorem culpa incidunt minus dignissimos deserunt repellat aperiam quasi sunt officia expedita beatae cupiditate, maiores repudiandae, nostrum, reiciendis facere nemo!</p>
+                                    <ul class="list-inline">
+                                        <li>
+                                            <strong>Client:</strong>
+                                            Southwest
+                                        </li>
+                                        <li>
+                                            <strong>Category:</strong>
+                                            Website Design
+                                        </li>
+                                    </ul>
+                                    <button class="btn btn-primary btn-xl text-uppercase" data-bs-dismiss="modal" type="button">
+                                        <i class="fas fa-xmark me-1"></i>
+                                        Close Project
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <!-- Portfolio item 6 modal popup-->
+        <div class="portfolio-modal modal fade" id="portfolioModal6" tabindex="-1" role="dialog" aria-hidden="true">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="close-modal" data-bs-dismiss="modal"><img src="assets/img/close-icon.svg" alt="Close modal" /></div>
+                    <div class="container">
+                        <div class="row justify-content-center">
+                            <div class="col-lg-8">
+                                <div class="modal-body">
+                                    <!-- Project details-->
+                                    <h2 class="text-uppercase">Project Name</h2>
+                                    <p class="item-intro text-muted">Lorem ipsum dolor sit amet consectetur.</p>
+                                    <img class="img-fluid d-block mx-auto" src="assets/img/portfolio/6.jpg" alt="..." />
+                                    <p>Use this area to describe your project. Lorem ipsum dolor sit amet, consectetur adipisicing elit. Est blanditiis dolorem culpa incidunt minus dignissimos deserunt repellat aperiam quasi sunt officia expedita beatae cupiditate, maiores repudiandae, nostrum, reiciendis facere nemo!</p>
+                                    <ul class="list-inline">
+                                        <li>
+                                            <strong>Client:</strong>
+                                            Window
+                                        </li>
+                                        <li>
+                                            <strong>Category:</strong>
+                                            Photography
+                                        </li>
+                                    </ul>
+                                    <button class="btn btn-primary btn-xl text-uppercase" data-bs-dismiss="modal" type="button">
+                                        <i class="fas fa-xmark me-1"></i>
+                                        Close Project
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+
+        <div id="qrcode-container">
+            <!-- The QR code will be embedded here -->
+        </div>
+        <!-- Bootstrap core JS-->
+        <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/js/bootstrap.bundle.min.js"></script>
+        <!-- Core theme JS-->
+        <script src="{% static 'js/scripts.js' %}"></script>
+        <!-- * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *-->
+        <!-- * *                               SB Forms JS                               * *-->
+        <!-- * * Activate your form at https://startbootstrap.com/solution/contact-forms * *-->
+        <!-- * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *-->
+        <script src="https://cdn.startbootstrap.com/sb-forms-latest.js"></script>
+        
+        {% comment %} <div class="modal fade" id="profileModal" tabindex="-1" aria-labelledby="profileModalLabel" aria-hidden="true">
+            <div class="modal-dialog modal-dialog-centered">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="profileModalLabel">My profile</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body">
+                        <p><strong>Name:</strong>  {{ user.username }}</p>
+                        <p><strong>Email:</strong>  {{ user.email }}</p>
+                        <p><strong>Birth day:</strong> {{user.birth_date}}</p>
+                        <p><strong>Height:</strong> {{ user.height }}</p>
+                        <p><strong>Weight:</strong> {{ user.weight }}</p>
+                        <p><strong>Gender:</strong> {{ user.gender }}</p>
+                        <p><strong>Health Condition:</strong> {{ user.health_condition }}</p>
+                    </div>
+                    <div class="modal-footer">
+                        <form action="{% url 'logout' %}" method="post">
+                            {% csrf_token %}
+                            <button type="submit" class="btn btn-success">Logout</button>
+                        </form>
+                        <a href="/edit" class="btn btn-warning btn">Edit</a>
+                    </div>
+                </div>
+            </div>
+        </div> {% endcomment %}
+        
+        <div class="modal fade" id="profileModal" tabindex="-1" aria-labelledby="profileModalLabel" aria-hidden="true">
+            <div class="modal-dialog modal-dialog-centered">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="profileModalLabel">My profile</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body">
+                        <form id="profileForm">
+                            <div class="mb-3">
+                                <label for="username" class="form-label">Name</label>
+                                <input type="text" class="form-control" id="username" name="username" value="{{ user.username }}" disabled>
+                            </div>
+                            <div class="mb-3">
+                                <label for="email" class="form-label">Email</label>
+                                <input type="email" class="form-control" id="email" name="email" value="{{ user.email }}" disabled>
+                            </div>
+                            <div class="mb-3">
+                                <label for="birth_date" class="form-label">Birth Day</label>
+                                {% comment %} the filter below |date: '20y-m-d' converts 1st May, 24 to 2024-05-01, we need this because only the last 2 digits 
+                                of the year is saved (ex:2025->25) {% endcomment %}
+                                <input type="date" class="form-control" id="birth_date" name="birth_date" value="{{ user.birth_date|date:'20y-m-d' }}">
+                            </div>
+                            <div class="mb-3">
+                                <label for="height" class="form-label">Height (cm)</label>
+                                <input type="number" class="form-control" id="height" name="height" value="{{ user.height }}">
+                            </div>
+                            <div class="mb-3">
+                                <label for="weight" class="form-label">Weight (kg)</label>
+                                <input type="number" class="form-control" id="weight" name="weight" value="{{ user.weight }}">
+                            </div>
+                            <div class="mb-3">
+                                <label for="gender" class="form-label">Gender</label>
+                                <select class="form-select" id="gender" name="gender">
+                                    <option value="M" {% if user.gender == 'M' %} selected {% endif %}>Male</option>
+                                    <option value="F" {% if user.gender == 'F' %} selected {% endif %}>Female</option>
+                                    <option value="" {% if user.gender == '' %} selected {% endif %}>None of the above</option>
+                                </select>
+                            </div>
+                            <div class="mb-3">
+                                <label for="health_condition" class="form-label">Health Condition</label>
+                                <input type="text" class="form-control" id="health_condition" name="health_condition" value="{{ user.health_condition }}">
+                            </div>
+                        </form>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" id="profileModalSaveButton"class="btn btn-primary" onclick="save_user()">Save Edit</button>
+                        
+                        <form action="{% url 'logout' %}" method="post">
+                            {% csrf_token %}
+                            <button type="submit" class="btn btn-info">Logout</button>
+                        </form>
+                    </div>
+                    <script>
+                        function save_user() {
+                            var form = document.getElementById("profileForm");
+                            var formData = new FormData(form);
+                            var profileModal = document.getElementById("profileModal");
+                            var profileModalSaveButton = profileModal.querySelector('#profileModalSaveButton');
+                        
+                            fetch('/save_user', {
+                                method: 'POST',
+                                body: formData,
+                                headers: {
+                                    'X-CSRFToken': '{{ csrf_token }}',
+                                }
+                            })
+                            .then(response => {
+                                if (response.ok) {
+                                    // Profile updated successfully
+                                    // You may want to reload the page or show a success message
+                                    console.log('Profile updated successfully');
+                                    profileModalSaveButton.classList.remove('btn-primary');
+                                    profileModalSaveButton.classList.add('btn-success');
+                                    profileModalSaveButton.innerText = "Saved!";
+                                } else {
+                                    console.error('Failed to update profile');
+                                    // Handle error response
+                                }
+                            })
+                            .catch(error => {
+                                console.error('Error updating profile:', error);
+                                // Handle network error
+                            });
+                        }
+                        function remakeProfileModal(){
+                            var profileModal = document.getElementById('profileModal');
+                            var profileModalSaveButton = profileModal.querySelector('#profileModalSaveButton');
+                            // Change button color to green, show "Saved" to user
+                            profileModalSaveButton.classList.remove('btn-success');
+                            profileModalSaveButton.classList.add('btn-primary');
+                            profileModalSaveButton.innerText = "Save Edit";
+                        }
+                    </script>
+                </div>
+            </div>
+        </div>
+
+        <div class="modal fade" id="loginModal" tabindex="-1" aria-labelledby="loginModalLabel" aria-hidden="true">
+            <div class="modal-dialog modal-dialog-centered">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="loginModalLabel">My profile</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body">
+                        <p><strong>Name:</strong>  {{ user.username }}</p>
+                        <p><strong>Email:</strong>  {{ user.email }}</p>
+                        <p><strong>Birth day:</strong> {{user.birth_date}}</p>
+                        <p><strong>Height:</strong> {{ user.height }}</p>
+                        <p><strong>Weight:</strong> {{ user.weight }}</p>
+                        <p><strong>Gender:</strong> {{ user.gender }}</p>
+                        <p><strong>Health Condition:</strong> {{ user.health_condition }}</p>
+                    </div>
+                    <div class="modal-footer">
+                        <form action="{% url 'logout' %}" method="post">
+                            {% csrf_token %}
+                            <button type="submit" class="btn btn-primary">Logout</button>
+                            <a href="/edit" class="btn btn-warning">Edit</a>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="modal fade" id="saveMealModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+            <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable">
+            <div class="modal-content">
+                <div class="modal-header">
+                <h5 class="modal-title" id="exampleModalLabel">Add Meal to History</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div id="mealImage"></div>
+                    <div id="ingredientsContainer"></div>
+                    <div class="table-wrapper">
+                        <div class="table-title">
+                            <h2>Ingredients</h2>
+                            <button type="button" class="btn btn-info add-new"><i class="fa fa-plus"></i> Add New</button>
+                        </div>
+                        <table class="table table-bordered">
+                            <thead>
+                                <tr>
+                                    <th>Ingredient</th>
+                                    <th>Weight (g)</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="ingredientTableBody">
+                                <!-- Ingredients rows will be added dynamically here -->
+                            </tbody>
+                        </table>
+                    </div>
+                    <form id="mealForm">
+                        <div class="mb-3">
+                            <label for="date_time" class="form-label">Date and Time</label>
+                            <input type="datetime-local" class="form-control" id="date_time" name="date_time">
+                        </div>
+                        <div class="mb-3">
+                            <label for="description" class="form-label">Description</label>
+                            <input type="text" class="form-control" id="description" name="description">
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" id="saveBtn" class="btn btn-primary" onclick="saveAndShowMeals();">Save</button>
+                </div>
+            </div>
+            </div>
+        </div>
+    </body>
+</html>
+

@@ -1,0 +1,23 @@
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+.Python
+.env
+.venv/
+venv/
+*.sqlite3
+
+# Django
+*.log
+staticfiles/
+media/
+local_settings.py
+
+# Pycharm
+.idea/
+
+# App-generated uploads / outputs
+app/static/meal_data/
+app/static/received_img/

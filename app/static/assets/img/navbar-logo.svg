@@ -1,0 +1,9 @@
+<svg width="115" height="50" xmlns="http://www.w3.org/2000/svg">
+
+ <g>
+  <title>Layer 1</title>
+  <text transform="matrix(2.02678 0 0 1.60846 -2.11816 0.868759)" stroke="#000" font-weight="normal" xml:space="preserve" text-anchor="start" font-family="'Dancing Script'" font-size="24" id="svg_1" y="22" x="4" stroke-width="0" fill="#ffc800">Demo</text>
+  <path id="svg_8" d="m98.49999,35.39999" opacity="NaN" stroke-width="0" stroke="#000" fill="#ffc800"/>
+  <path stroke="#000" d="m34.49999,85.39999c-1,1 -1.84628,6.37815 -4,11c-2.70454,5.80392 -4.19028,7.88152 -6,11c-1.12234,1.934 -2.49346,4.87856 -3,8c-0.16018,0.98709 -1.58579,3.58578 -3,5c-2.12132,2.12132 0.28978,4.04291 0,5c-1.04483,3.45084 -3,3.00001 -3,5.00001l0,1l-1,1" id="svg_10" stroke-width="0" fill="none"/>
+ </g>
+</svg>

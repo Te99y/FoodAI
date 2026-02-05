@@ -13,13 +13,14 @@ import paramiko
 import json, csv
 import shutil
 import pathlib
+from dotenv import load_dotenv
 
 # --- Remote inference configuration ---
 # This project originally ran inference on a separate machine (SSH/SFTP + docker exec).
 # For GitHub, credentials are intentionally NOT included. Configure via environment variables.
 #
-# Set INFERENCE_MODE=demo to skip SSH and use local placeholder outputs (useful for portfolio/demo).
-
+# Set INFERENCE_MODE=demo to skip SSH and use local placeholder outputs.
+load_dotenv()
 INFERENCE_MODE = os.getenv("INFERENCE_MODE", "remote")  # remote | demo
 
 def _env(name: str, default: str | None = None) -> str:
@@ -32,41 +33,46 @@ def upload_image(request):
     if request.method == 'POST':
         image = request.FILES['image']
         username = request.user.username
-        received_img_folder = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'static\\received_img')
         meal_data_folder = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'static\\meal_data')
         data_folder = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'data')
         meal_images_folder = os.path.join(meal_data_folder, 'meal_images')
         segmented_images_folder = os.path.join(meal_data_folder, 'segmented_images')
         json_folder = os.path.join(meal_data_folder, 'json_analysis_results')
+        demo_folder = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'static\\demo')
 
-        # Temp file naming : username^temp.png
-        # If user saves it : username^date^time.png
-        # I didn't use _ to seperate because username might contain that
-        temp_image_path = os.path.join(meal_images_folder, f'{username}^temp.png')
+        if _env("INFERENCE_MODE") == 'demo':
+            food_area_json = os.path.join(demo_folder, 'food_area.json')
+            temp_image_path = os.path.join(demo_folder, 'food.png')
+        else:  # remote inference
+            # Temp file naming : username^temp.png
+            # If user saves it : username^date^time.png
+            # I didn't use _ to seperate because username might contain that
+            os.makedirs(meal_images_folder, exist_ok=True)
+            temp_image_path = os.path.join(meal_images_folder, f'{username}^temp.png')
+            with open(temp_image_path, 'wb') as temp_image:
+                for chunk in image.chunks():
+                    temp_image.write(chunk)
 
-        with open(temp_image_path, 'wb') as temp_image:
-            for chunk in image.chunks():
-                temp_image.write(chunk)
-        
-        # I don't have GPU locally, so I SCP images for inference at <remote-inference-host>
-        # After that I download it
-        scp_upload(source_path=temp_image_path)
-        temp_segmented_image_path = os.path.join(segmented_images_folder, f'{username}^temp.png')
-        temp_json_result_path = os.path.join(json_folder, f'{username}^temp.json')
-        scp_download(segmented_image_destination=temp_segmented_image_path, json_result_destination=temp_json_result_path)
+            # I don't have GPU locally, so I SCP images for inference at <remote-inference-host>
+            # After that I download it
+            scp_upload(source_path=temp_image_path)
+            temp_segmented_image_path = os.path.join(segmented_images_folder, f'{username}^temp.png')
+            temp_json_result_path = os.path.join(json_folder, f'{username}^temp.json')
+            scp_download(segmented_image_destination=temp_segmented_image_path, json_result_destination=temp_json_result_path)
+            # load the json analysis results(area of each ingredient) to a dictionary
+            food_area_json = os.path.join(json_folder, f'{username}^temp.json')
 
-        # load the json analysis results(area of each ingredient) to a dictionary
-        food_area_json = os.path.join(json_folder, f'{username}^temp.json')  
         with open(food_area_json, 'r') as file:
             json_data = file.read()
         food_area_dictionary = json.loads(json_data)
         # define variables to be used and the path of the CSV reference file for food nutrients data 
         detected_ingredients = [] # 出現的食物列表
         nutrition_components = [0.0, 0.0, 0.0, 0.0, 0.0, 0.0] # 六大營養指標(公克)
-        vitamines = [0.0, 0.0, 0.0, 0.0] # 維生素ADEK的含量
+        vitamins = [0.0, 0.0, 0.0, 0.0] # 維生素ADEK的含量
         category_7_food = [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0] # 七大類食物的面積
         nutrition_csv_path = os.path.join(data_folder, 'nutrition_new.csv')
-        # open the CSV refernece file and find nutrient data for the foods appeared in the food_area_dictionary (food area from json analysis results)
+        # open the CSV reference file and find nutrient data for the foods appeared in the
+        # food_area_dictionary (food area from json analysis results)
         with open(nutrition_csv_path, 'r', encoding='utf-8') as nutrition_csv:
             csv_reader = csv.reader(nutrition_csv)
             next(csv_reader)  # skip the title row
@@ -81,18 +87,18 @@ def upload_image(request):
                         nutrition_components[r] += float(row[5+r])*food_unit
                     # 第 11~14 column 是維生素
                     for r in range(4):  #11A, 12D, 13E, 14K
-                        vitamines[r] += float(row[11+r])*food_unit
+                        vitamins[r] += float(row[11+r])*food_unit
                     # 把食物 i 的面積加到它對應的第幾大類食物, 第一大類就加到 category_7_food[1-1](要-1因為沒有第0大類食物, 從1開始)
                     category_7_food[int(row[2])-1] += food_area_dictionary[str(i)]
                     row[3] = (food_unit*100)//1
                     detected_ingredients.append(row)
             print(f'components : {nutrition_components}')
-            print(f'vitamins : {vitamines}')
+            print(f'vitamins : {vitamins}')
             print(f'category_7_food : {category_7_food}')
         analysis_dict = {
             'ingredients': detected_ingredients,
             'components': nutrition_components,
-            'vitamins': vitamines,
+            'vitamins': vitamins,
             'category_7_food': category_7_food,
         }
         analysis_json = json.dumps(analysis_dict)
@@ -100,7 +106,7 @@ def upload_image(request):
         request.session['image_path'] = temp_image_path
 
         return JsonResponse({'success': True, 'username': username, 'detectedIngredients': detected_ingredients,
-                             'components': nutrition_components, 'vitamins': vitamines, 'category_7_food': category_7_food})
+                             'components': nutrition_components, 'vitamins': vitamins, 'category_7_food': category_7_food})
 
     # return render(request, 'upload_form.html')
 
@@ -186,7 +192,7 @@ def get_month_meals(request):
 
 def index(request):
     # return HttpResponse("Hello")
-    return render(request, 'index.html')
+    return render(request, 'index.html', {"app_mode": INFERENCE_MODE})
 
 def profile(request):
     return render(request, 'profile.html')
@@ -255,7 +261,7 @@ def scp_upload(source_path):
 def scp_download(segmented_image_destination, json_result_destination):
     # Download inference outputs from the inference machine (or use demo outputs).
     if INFERENCE_MODE == "demo":
-        demo_dir = pathlib.Path(__file__).resolve().parent / "static" / "demo_outputs"
+        demo_dir = pathlib.Path(__file__).resolve().parent / "static" / "demo"
         demo_img = demo_dir / "enhance_vis.png"
         demo_json = demo_dir / "food_area.json"
         os.makedirs(os.path.dirname(segmented_image_destination), exist_ok=True)

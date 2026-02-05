@@ -184,6 +184,7 @@
                             </form> 
                             
                             <script>
+                                const app_mode = "{{app_mode}}"
                                 function previewImage() {
                                     var input = document.getElementById('imageInput');
                                     var preview = document.getElementById('imagePreview');
@@ -257,20 +258,28 @@
                                     .then(response => response.json())
                                     .then(data => {
                                         temp_data = data;
-                                        // Display processed image on the frontend
                                         waitspinner.style.display = 'none';
-                                        var timestamp = new Date().getTime();
-                                        let processedImageHTML = `<img src="static\\meal_data\\segmented_images\\${data.username}^temp.png ?t=' + ${timestamp} + '" class="img-fluid" alt="Processed Image">`;
-                                        imagePreview.innerHTML = '';
+
+                                        const timestamp = Date.now();
+                                        let processedImageHTML;
+
+                                        if (app_mode === "demo") {
+                                            processedImageHTML = `<img src="/static/demo/segmented.png?t=${timestamp}"
+                                                                   class="img-fluid" alt="Processed Image">`;
+                                        } else if (app_mode === "remote") {
+                                            processedImageHTML = `<img src="/static/meal_data/segmented_images/${data.username}^temp.png?t=${timestamp}"
+                                                                   class="img-fluid" alt="Processed Image">`;
+                                        }
+
                                         imagePreview.innerHTML = processedImageHTML;
                                         console.log(imagePreview.innerHTML);
-                                        // Display detected ingredients on the frontend
-                                        var ingredientsHTML = '<ul>';
+
+                                        // Display detected ingredients
+                                        let ingredientsHTML = "<ul>";
                                         data.detectedIngredients.forEach(function (ingredient) {
-                                            //ingredientsHTML += '<li style="color: rgb' + ingredient[1] + ';">' + ingredient[0] + '</li>';
-                                            ingredientsHTML += '<li>' + ingredient[0] + '</li>';
+                                            ingredientsHTML += `<li>${ingredient[0]}</li>`;
                                         });
-                                        ingredientsHTML += '</ul>';
+                                        ingredientsHTML += "</ul>";
                                         detectedIngredients.innerHTML = ingredientsHTML;
                                         // Update charts
                                         console.log(data)

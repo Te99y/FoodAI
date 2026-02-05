@@ -1,11 +1,15 @@
 # Food Image Segmentation & Nutrition Analysis (Django)
+<img width="1881" height="304" alt="Screenshot 2026-02-05 210341" src="https://github.com/user-attachments/assets/902e9182-1bb7-4ee9-b9a3-cc28ec1a5485" />
 
 A Django web app where users can register, upload food photos, and receive:
+
 - food segmentation output image
 - ingredient area estimates (JSON)
 - nutrition analysis computed from a reference CSV
 
 This repo is a portfolio snapshot of an older project; the original model inference ran on a separate machine.
+
+<img width="1650" height="444" alt="專題海報 69104 (2)" src="https://github.com/user-attachments/assets/f0a66fc0-1336-4aae-945a-a48d658d8610" />
 
 ## Tech stack
 - Django
@@ -40,8 +44,3 @@ At minimum:
 - `INFERENCE_SSH_HOST`, `INFERENCE_SSH_PORT`, `INFERENCE_SSH_USER`, `INFERENCE_SSH_PASSWORD`
 - `INFERENCE_REMOTE_UPLOAD_PATH`, `INFERENCE_REMOTE_SEGMENTED_PATH`, `INFERENCE_REMOTE_JSON_PATH`
 - optionally `INFERENCE_DOCKER_COMMAND`
-
-## What I would improve next
-- Replace SSH/SFTP orchestration with an HTTP inference API (FastAPI) + queue (Celery/RQ)
-- Add tests for the nutrition calculation pipeline
-- Containerize with Docker Compose for reproducible dev setup

@@ -16,7 +16,7 @@ This repo is a portfolio snapshot of an older project; the original model infere
 - Paramiko (SSH/SFTP) for remote inference orchestration
 - Remote inference via `docker exec ...` (configurable)
 
-## Security note (important)
+## Security note
 **No credentials are stored in this repo.**  
 If you want to use the original remote-inference flow, provide secrets via environment variables (see `.env.example`).
 
@@ -37,7 +37,7 @@ python manage.py runserver
 
 Then open http://127.0.0.1:8000/
 
-## Remote inference (optional)
+## Remote inference
 Set `INFERENCE_MODE=remote` and fill the `INFERENCE_*` variables in your `.env`.
 
 At minimum:
